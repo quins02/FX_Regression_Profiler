@@ -86,15 +86,15 @@ int main(){
 		i += (int) (Path_Length/Interval);
 	}
 
-	string CVAN = "CVA.dat";
+	string CVAN = "tmp/CVA.dat";
 	ofstream CVA;
 	CVA.open(CVAN.c_str());
 
-	string CVAM = "CVAMean.dat";
+	string CVAM = "tmp/CVAMean.dat";
 	ofstream Mean;
 	Mean.open(CVAM.c_str());
 
-	string CVAPM = "CVAPMean.dat";
+	string CVAPM = "tmp/CVAPMean.dat";
 	ofstream PMean;
 	PMean.open(CVAPM.c_str());
 
@@ -146,7 +146,7 @@ vector < vector < vector < double > > >  BetaGen(){
 	cin>>OUT;
 
 
-	string strikeS = "strike.dat";
+	string strikeS = "tmp/strike.dat";
 	ofstream SK;
 	SK.open(strikeS.c_str());
 
@@ -204,7 +204,7 @@ vector < vector < vector < double > > >  BetaGen(){
 		//and applying to function
 		//Output to BucketFit.dat
 		//**************NOT OPTIMISED******************
-		string BUCK = "BucketFit" + static_cast<ostringstream*>( &(ostringstream() << DMONTH) )->str() + string(".dat");
+		string BUCK = "tmp/BucketFit" + static_cast<ostringstream*>( &(ostringstream() << DMONTH) )->str() + string(".dat");
 		ofstream BF;
 		BF.open(BUCK.c_str());
 
