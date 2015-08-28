@@ -231,3 +231,24 @@ vector< vector < double > > GenIdent(int S){
 	return v;
 }
 	
+vector <vector <double> > MatAdd(vector <vector <double> > A, vector <vector <double> >B){
+	vector <double> IN(A[0].size(),0);
+	vector <vector <double> > Out(A.size(),IN);
+	for(int i = 0 ; i < Out.size() ; i++){
+		for(int j = 0 ; j < Out[0].size() ; j++){
+			Out[i][j]=A[i][j]+B[i][j];
+		}
+	}
+	return Out;
+}
+
+vector <vector <double> > MatConstMult(vector <vector <double> > A, double alpha){
+		vector <double> IN(A[0].size(),0);
+	vector <vector <double> > Out(A.size(),IN);
+	for(int i = 0 ; i < Out.size() ; i++){
+		for(int j = 0 ; j < Out[0].size() ; j++){
+			Out[i][j]=A[i][j]*alpha;
+		}
+	}
+	return Out;
+}
