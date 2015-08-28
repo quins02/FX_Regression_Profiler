@@ -213,4 +213,21 @@ vector< vector <double> > File2Mat(string Name){
 
 	return InMAT;
 }
+
+vector< vector < double > > GenIdent(int S){
+	gsl_matrix * m = gsl_matrix_alloc(S,S);
+	
+	gsl_matrix_set_identity(m);
+
+	vector <double> IN(S,0);
+	vector < vector < double > > v(S,IN);
+
+	for(int i = 0 ; i<S ; i++){
+		for(int j = 0 ; j<S ; j++){
+			v[i][j] = gsl_matrix_get(m,i,j);
+		}
+	}
+
+	return v;
+}
 	

@@ -11,5 +11,5 @@ std::vector <std::vector<double> > MatMult( std::vector <std::vector<double> > A
 std::vector <std::vector<double> > MatInv( std::vector <std::vector<double> > A);
 std::vector <double> ExtCol(std::vector<std::vector<double> > v, int Col);
 std::vector <std::vector <double> > File2Mat(std::string Name);
-
+std::vector <std::vector <double> > GenIdent(int S);
 #endif

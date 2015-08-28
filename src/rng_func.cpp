@@ -94,7 +94,7 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, st
 
 	//Stochastic Interest rate 1 parameters
 	double Sk = 170;	//Mean reversion parameter
-	double SV = 0.06;	//Average interest rate
+	double SV = 0.01;	//Average interest rate
 	double So = 0.05;	//Interest rate volatility
 
 	const gsl_rng_type * Q = gsl_rng_default;
@@ -112,6 +112,7 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, st
 	gsl_rng_env_setup();
 
 	vector< vector <double> > MultOut;
+	vector< vector < vector <double> > > MultOutPLUSR;
 
 	vector<double> R1_vec;
 	vector<double> A;
@@ -152,6 +153,7 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, st
 			//}	
 			R2 += Sk*(SV-R2)*dt + R2*(gsl_ran_gaussian(W,So));
 			R2=abs(R2);
+			R1=abs(R1);
 			R2_vec.push_back(R2);
 			R1_vec.push_back(R1);
 			//tmp += tmp*(R*dt+(gsl_ran_gaussian(r,0.006)));

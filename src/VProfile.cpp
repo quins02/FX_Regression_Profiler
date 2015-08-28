@@ -331,7 +331,7 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	while(i<X[0].size()){
 			//R += (X[1][i][(int)tau] / 10000) * dt;
 			//S = X[1][i][j];
-			n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,1);
+			n = opt_dig_call(X[1][i][T/dt - 1],STRIKE,0.01,1);
 			Phi.push_back(n);
 			tau+=dt;
 		//Opt<<n<<endl;
@@ -386,6 +386,8 @@ double parab(vector<double> Coef, double X){
 	for(size_t i =0 ; i<Coef.size(); i++){
 		Y+=pow(X,i)*Coef[i];
 	}
+	if(Y<0){Y=0;}
+	if(Y>1){Y=1;}
 	return Y;
 }
 

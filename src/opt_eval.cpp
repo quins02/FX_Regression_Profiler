@@ -19,7 +19,7 @@ double opt_put(double S, double K, double r, double t){
 
 double opt_dig_call(double S, double K, double r, double t){
 	double ND;
-	if(S>K){ND = 10;}
+	if(S>K){ND = 1;}
 	else{ND=0;}
 	double D = ND * exp(-r*t);
 	return D;
