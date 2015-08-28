@@ -25,6 +25,32 @@ double opt_dig_call(double S, double K, double r, double t){
 	return D;
 }
 
+double opt_dig_put(double S, double K, double r, double t){
+	double ND;
+	if(S<K){ND = 1;}
+	else{ND=0;}
+	double D = ND * exp(-r*t);
+	return D;
+}
+
+double barrier_call(vector <double> Path, double barrier, bool IO, bool UD, double S, double K, double r, double t){
+	//bool IO -> 1 = knock in, 0 = knock out
+	//bool UD -> 1 = Up, 0 = Down
+	double Ret;
+	bool bar = 1;
+	size_t PSize = Path.size();
+	double P1 = Path[0];
+	
+
+	for(size_t i = 1 ; i<PSize ; i++){
+		if(Path[i]<=barrier || Path[i]>barrier){
+			bar = 0;
+			i=PSize;
+		}
+	}
+	return Ret;
+}
+
 double NORMFUNC(double x, void * params){
 	double alpha = *(double *) params;
 	double f = (1/sqrt(2*M_PI))*exp(-(alpha*x*x)/2);
