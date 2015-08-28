@@ -87,15 +87,15 @@ vector <vector <double> > CorMat(vector <vector <double> > Data){
 
 vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, string HistData){
 	
-	//Stochastic Interest rate parameters
+	
 	double k = 170;		//Mean reversion parameter
 	double V = 0.01;	//Average interest rate
 	double o = 0.05;	//Interest rate volatility
 
-	//Stochastic Vol Paramenters
-	double Sk = 200;	//Mean reversion parameter
-	double SV = 0.006;	//Average Vol
-	double So = 0.01;	//Volga (Vol of Vol)
+	//Stochastic Interest rate 1 parameters
+	double Sk = 170;	//Mean reversion parameter
+	double SV = 0.06;	//Average interest rate
+	double So = 0.05;	//Interest rate volatility
 
 	const gsl_rng_type * Q = gsl_rng_default;
 	gsl_rng * r = gsl_rng_alloc(Q);
@@ -113,9 +113,9 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, st
 
 	vector< vector <double> > MultOut;
 
-	vector<double> R_vec;
+	vector<double> R1_vec;
 	vector<double> A;
-	vector<double> sigma;
+	vector<double> R2_vec;
 
 	vector<double> Hist;
 
@@ -129,38 +129,39 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, st
 		Hist.push_back(TEMP);
 	}	
 
-	double R, Si, tmp;
-	int m;
+	double R1, R2, tmp;
+	//int m;
 
 	for(int COUNT = 0 ; COUNT < PATH ; COUNT++){
-		R = 0;	//Initial Interest Rate T=0
-		Si = 0.006;	//Initial Volatility T=0
+		R1 = -0.005;	//Initial Interest Rate T=0
+		R2 = 0.006;	//Initial Volatility T=0
 		
-		m=1;	
+		//m=1;	
 		
-		sigma.push_back(Si);		
-		R_vec.push_back(R);
+		R2_vec.push_back(R2);		
+		R1_vec.push_back(R1);
 
 		//tmp = Hist[Hist.size()-1];	//Initial Asset Price T=0
 		tmp =1;
+		A.push_back(tmp);
 
-		for( int i = 0; i<(T/dt) ; i++ ){
-			if(i==(int)((m/20)*(T/dt))){
-				R+=k*(V-R)*dt + R*(gsl_ran_gaussian(W,o));
-				m++;
-			}	
-			Si += Sk*(SV-Si)*dt + Si*(gsl_ran_gaussian(W,So));
-			Si=abs(Si);
-			sigma.push_back(Si);
-			R_vec.push_back(R);
+		for( int i = 1; i<(T/dt) ; i++ ){
+			//if(i==(int)((m/20)*(T/dt))){
+			R1+=k*(V-R1)*dt + R1*(gsl_ran_gaussian(W,o));
+			//	m++;
+			//}	
+			R2 += Sk*(SV-R2)*dt + R2*(gsl_ran_gaussian(W,So));
+			R2=abs(R2);
+			R2_vec.push_back(R2);
+			R1_vec.push_back(R1);
 			//tmp += tmp*(R*dt+(gsl_ran_gaussian(r,0.006)));
-			tmp += tmp*(R*dt+(gsl_ran_gaussian(r,0.01)));
+			tmp += tmp*((R1-R2)*dt+(gsl_ran_gaussian(r,0.01)));
 			A.push_back(tmp);
 		}
 		MultOut.push_back(A);
-		R_vec.clear();
+		R1_vec.clear();
 		A.clear();
-		sigma.clear();
+		R2_vec.clear();
 	}
 
 	return MultOut;

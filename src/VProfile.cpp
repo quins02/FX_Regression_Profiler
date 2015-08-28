@@ -61,12 +61,25 @@ int main(){
 
 	double tmp;
 
+	string CVANA = "tmp/VPath.dat";
+	ofstream CVAA;
+	CVAA.open(CVANA.c_str());
+
+	for(size_t i = 0 ; i < V[0].size() ; i++){
+		for(size_t j = 0 ; j < V.size() ; j++){
+			CVAA<<V[j][i]<<"\t";
+		}
+		CVAA<<endl;
+	}
+
 	// vector < double > tmpBeta;
 	vector < double > Val_Path;
 	vector < vector < double > > Val_T;
 
-	for( Tv =  X.size() - 1 ; Tv >= 0 ; Tv-- ){
-		int i = 0 ;
+	int i = (int) (Path_Length/Interval) ;
+
+	for( Tv =  0 ; Tv < X.size()   ; Tv++ ){
+	
 		for( size_t j = 0 ; j < Num_Path ; j++ ){
 			tmp = V[j][i];
 			for ( size_t k = 0 ; k < Num_Buckets ; k++ ){
@@ -100,10 +113,10 @@ int main(){
 
 	for( size_t i = 0 ; i < Val_T.size() ; i++ ){
 		for( size_t j = 0 ; j < Val_T[0].size() ; j++ ){
-			CVA<<i<<"\t"<<Val_T[i][j]<<endl;
+			CVA<<i+1<<"\t"<<Val_T[i][j]<<endl;
 		}
-		Mean<<mean(Val_T[i])<<endl;
-		PMean<<mean(X_percent(Val_T[i],0.95))<<endl;
+		Mean<<i+1<<"\t"<<mean(Val_T[i])<<endl;
+		PMean<<i+1<<"\t"<<mean(X_percent(Val_T[i],0.95))<<endl;
 	}
 
 	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
@@ -168,7 +181,7 @@ vector < vector < vector < double > > >  BetaGen(){
 	vector < vector < vector < double > > > RetVec;
 	vector < vector < double > > BUCKETVEC;
 
-	for(double DMONTH = 0; DMONTH<=12 ; DMONTH++){
+	for(double DMONTH = 1; DMONTH<=12 ; DMONTH++){
 
 		//Extract values for asset price from training paths at time t. 
 		//Add to vector v
@@ -315,23 +328,14 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	//Evaluate CF at time t 
 	double tau = 0., R = 0, n=0, tmp=0;
 	vector<double> Phi;
-	vector< vector<double> > Phi_t;
 	while(i<X[0].size()){
-		while(tau<=T){
-			R += (X[1][i][j] / 10000) * dt;
+			//R += (X[1][i][(int)tau] / 10000) * dt;
 			//S = X[1][i][j];
-			n = opt_call(X[1][i][j],STRIKE,0.0,tau);
+			n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,1);
 			Phi.push_back(n);
 			tau+=dt;
-			j++;
-		}
-		tmp+=n;
 		//Opt<<n<<endl;
-		R=0;
-		tau=0;
 		j=0;
-		Phi_t.push_back(Phi);
-		Phi.clear();
 		i++;
 	}
 
@@ -348,8 +352,7 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 		j=0;
 		tmp_phi.clear();
 		while(j<X[0].size()){
-			tmp_vec.push_back(X[i][j][(int)(((T/dt)/12)*DMONTH)]);
-			tmp_phi.push_back(Phi_t[j][T/dt -1]);
+			tmp_vec.push_back(X[i][j][(int)(((T/dt)/12)*DMONTH)-1]);
 		 	j++;
 		}
 		tmp_mat.push_back(tmp_vec);
@@ -357,7 +360,7 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 		i++;
 	}
 
-	phi_T.push_back(tmp_phi);
+	phi_T.push_back(Phi);
 
 	vector< vector<double> > MATRIX = transpose(tmp_mat);
 	vector< vector<double> > MATRIXMultD = MatMult (tmp_mat,MATRIX);
@@ -406,7 +409,7 @@ double mean(vector <double> vec){
 vector <double> X_percent(vector <double> vec, double Percentile){
 	sort(vec.begin(),vec.end());
 	int S = vec.size() - 1;
-	int Bracket = (int)(S*Percentile);
-	vector <double> Percent (vec.begin(), vec.begin()+Bracket);
+	int Bracket = S-(int)(S*Percentile);
+	vector <double> Percent (vec.end()-Bracket, vec.end());
 	return Percent;
 }

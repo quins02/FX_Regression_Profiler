@@ -1,5 +1,4 @@
-set terminal jpeg enhanced
-set output "Profile.jpg"
+set term x11
 set autoscale
 set xlabel "Time (Month)"
 set ylabel "Option Value ($)"

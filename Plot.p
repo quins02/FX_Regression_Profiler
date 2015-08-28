@@ -1,5 +1,4 @@
-set terminal jpeg enhanced
-set output "Out.jpg"
+set term x11
 set xrange [0.9:1.2]
 set yrange [-0.01:0.2]
 set xlabel "FX Rate"
