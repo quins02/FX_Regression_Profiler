@@ -25,6 +25,60 @@ double opt_dig_call(double S, double K, double r, double t){
 	return D;
 }
 
+double opt_dig_put(double S, double K, double r, double t){
+	double ND;
+	if(S<K){ND = 1;}
+	else{ND=0;}
+	double D = ND * exp(-r*t);
+	return D;
+}
+
+double barrier_call(vector <double> Path, double barrier, bool IO, bool UD, double K, double r, double t){
+	//bool IO -> 1 = knock in, 0 = knock out
+	//bool UD -> 1 = Up, 0 = Down
+	size_t PSize = Path.size();
+	double P0 = Path[0];
+	double S = Path[Path.size()-1];
+	bool bar;
+	
+	if ( IO == 1 ) {bar = 0;}
+	else if ( IO == 0 ) {bar = 1;}
+
+	for(size_t i = 1 ; i<PSize ; i++){
+		if( (UD == 1 && Path[i]>barrier) || (UD == 0 && Path[i]<barrier) ){
+			bar = !bar;
+			i=PSize;
+		}
+	}
+
+	int Coef = (int) bar;
+
+	return Coef*opt_call(S,K,r,t);
+}
+
+double barrier_put(vector <double> Path, double barrier, bool IO, bool UD, double K, double r, double t){
+	//bool IO -> 1 = knock in, 0 = knock out
+	//bool UD -> 1 = Up, 0 = Down
+	size_t PSize = Path.size();
+	double P0 = Path[0];
+	double S = Path[Path.size()-1];
+	bool bar;
+	
+	if ( IO == 1 ) {bar = 0;}
+	else if ( IO == 0 ) {bar = 1;}
+
+	for(size_t i = 1 ; i<PSize ; i++){
+		if( (UD == 1 && Path[i]>barrier) || (UD == 0 && Path[i]<barrier) ){
+			bar = !bar;
+			i=PSize;
+		}
+	}
+
+	int Coef = (int) bar;
+
+	return Coef*opt_put(S,K,r,t);
+}
+
 double NORMFUNC(double x, void * params){
 	double alpha = *(double *) params;
 	double f = (1/sqrt(2*M_PI))*exp(-(alpha*x*x)/2);

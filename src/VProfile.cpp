@@ -329,9 +329,16 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	double tau = 0., R = 0, n=0, tmp=0;
 	vector<double> Phi;
 	while(i<X[0].size()){
-			//R += (X[1][i][(int)tau] / 10000) * dt;
-			//S = X[1][i][j];
-			n = opt_dig_call(X[1][i][T/dt - 1],STRIKE,0.01,1);
+			//Exotic to be priced (i.e. option/spread/barrier SEE opt_eval.cpp for possible options)
+		//BUTTERFLY SPREAD
+			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,0.01,1)
+			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,1)
+			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,1);
+		//IN-OUT Parity
+			n = barrier_call(X[1][i],1.05,1,0,STRIKE,0.01,1)
+				+barrier_call(X[1][i],1.05,0,0,STRIKE,0.01,1);
+		//Call
+			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,1);
 			Phi.push_back(n);
 			tau+=dt;
 		//Opt<<n<<endl;
@@ -386,8 +393,8 @@ double parab(vector<double> Coef, double X){
 	for(size_t i =0 ; i<Coef.size(); i++){
 		Y+=pow(X,i)*Coef[i];
 	}
-	if(Y<0){Y=0;}
-	if(Y>1){Y=1;}
+	// if(Y<0){Y=0;}
+	// if(Y>1){Y=1;}
 	return Y;
 }
 
