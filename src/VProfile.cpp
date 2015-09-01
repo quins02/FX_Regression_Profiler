@@ -329,9 +329,11 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	double tau = 0., R = 0, n=0, tmp=0;
 	vector<double> Phi;
 	while(i<X[0].size()){
-			//R += (X[1][i][(int)tau] / 10000) * dt;
-			//S = X[1][i][j];
-			n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,0.01,1)+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,1)+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,1);
+			//Exotic to be priced (i.e. option/spread/barrier SEE opt_eval.cpp for possible options)
+			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,0.01,1)
+			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,1)
+			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,1);
+			n = barrier_call(X[1][i],1.05,1,0,STRIKE,0.01,1-tau);
 			Phi.push_back(n);
 			tau+=dt;
 		//Opt<<n<<endl;
