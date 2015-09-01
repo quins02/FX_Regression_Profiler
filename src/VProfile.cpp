@@ -330,10 +330,15 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	vector<double> Phi;
 	while(i<X[0].size()){
 			//Exotic to be priced (i.e. option/spread/barrier SEE opt_eval.cpp for possible options)
+		//BUTTERFLY SPREAD
 			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,0.01,1)
 			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,1)
 			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,1);
-			n = barrier_call(X[1][i],1.05,1,0,STRIKE,0.01,1-tau);
+		//IN-OUT Parity
+			n = barrier_call(X[1][i],1.05,1,0,STRIKE,0.01,1)
+				+barrier_call(X[1][i],1.05,0,0,STRIKE,0.01,1);
+		//Call
+			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,1);
 			Phi.push_back(n);
 			tau+=dt;
 		//Opt<<n<<endl;
