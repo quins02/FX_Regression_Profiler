@@ -325,20 +325,26 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	//Initilise counting variables
 	size_t i=0, j=0;
 
+	double Dtime = (12-DMONTH)/12;
+
 	//Evaluate CF at time t 
 	double tau = 0., R = 0, n=0, tmp=0;
 	vector<double> Phi;
 	while(i<X[0].size()){
 			//Exotic to be priced (i.e. option/spread/barrier SEE opt_eval.cpp for possible options)
 		//BUTTERFLY SPREAD
-			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,0.01,1)
-			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,1)
-			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,1);
+			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,0.01,Dtime)
+			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,Dtime)
+			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
 		//IN-OUT Parity
-			n = barrier_call(X[1][i],1.05,1,0,STRIKE,0.01,1)
-				+barrier_call(X[1][i],1.05,0,0,STRIKE,0.01,1);
+			n = 4*barrier_call(X[1][i],1.1,0,1,STRIKE,0.01,Dtime);
+				+barrier_call(X[1][i],1.1,1,1,STRIKE,0.01,Dtime);
 		//Call
-			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,1);
+			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime);
+		//Construct Barrier with Ret clause
+			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime)
+			// 	- opt_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime)
+			// 	- 0.1*opt_dig_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
 			Phi.push_back(n);
 			tau+=dt;
 		//Opt<<n<<endl;

@@ -36,6 +36,8 @@ double opt_dig_put(double S, double K, double r, double t){
 double barrier_call(vector <double> Path, double barrier, bool IO, bool UD, double K, double r, double t){
 	//bool IO -> 1 = knock in, 0 = knock out
 	//bool UD -> 1 = Up, 0 = Down
+
+	// std::vector<double> Path=FPath;
 	size_t PSize = Path.size();
 	double P0 = Path[0];
 	double S = Path[Path.size()-1];
