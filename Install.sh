@@ -5,7 +5,7 @@ echo "Compiling Regression Pricing Model In Place..."
 mkdir tmp >/dev/null 2>&1
 mkdir bin >/dev/null 2>&1
 CF="$(gsl-config --cflags --libs)"
-g++ src/VProfile.cpp src/mat_opp.cpp src/opt_eval.cpp src/rng_func.cpp -O3 -o FXRegProfile.exe ${CF} -std=c++11
+g++ -Wall src/VProfile.cpp src/mat_opp.cpp src/opt_eval.cpp src/rng_func.cpp src/download.cpp -O3 -o FXRegProfile.exe -std=c++11 -lcurl ${CF}
 echo "Required DLLs for portability:"
 for i in $(cygcheck ./FXRegProfile.exe 2>/dev/null ); 
 	do 

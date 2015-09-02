@@ -39,7 +39,6 @@ double barrier_call(vector <double> Path, double barrier, bool IO, bool UD, doub
 
 	// std::vector<double> Path=FPath;
 	size_t PSize = Path.size();
-	double P0 = Path[0];
 	double S = Path[Path.size()-1];
 	bool bar;
 	
@@ -62,7 +61,6 @@ double barrier_put(vector <double> Path, double barrier, bool IO, bool UD, doubl
 	//bool IO -> 1 = knock in, 0 = knock out
 	//bool UD -> 1 = Up, 0 = Down
 	size_t PSize = Path.size();
-	double P0 = Path[0];
 	double S = Path[Path.size()-1];
 	bool bar;
 	

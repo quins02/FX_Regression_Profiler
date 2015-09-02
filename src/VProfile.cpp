@@ -10,6 +10,7 @@
 #include "rng_func.h"
 #include "opt_eval.h"	//Include optiom calculations functions
 #include "mat_opp.h"	//Include matrix operations functions
+#include "download.h"
 #include <time.h>
 #include <chrono>
 #include <algorithm>
@@ -32,12 +33,18 @@ int Path = 10;
 int T = 1;
 int Poly = 2;
 bool OUT = 0;
+vector <double> Hist;
 
 int main(){
 	//Timing Start
 	clock_t start;
 	double duration;
 	start = clock();
+
+	Data_Download("ECB/EURUSD","8dM9KB3tW11HYvxXGCBK");
+	Hist = TS_Vec("tmp/Out.csv");
+
+	cout<<Hist[0]<<endl;
 
 	vector < vector < vector < double > > > X = BetaGen();
 	vector< vector<double> > V = Val();
@@ -56,7 +63,7 @@ int main(){
 	// cout<<X[10][19][4]<<endl;
 
 
-	int Tv = 0;
+	size_t Tv = 0;
 	int Interval = 12;
 
 	double tmp;
@@ -171,7 +178,7 @@ vector < vector < vector < double > > >  BetaGen(){
 	start = clock();
 
 
-	vector< vector <double> > X =  PathGen(time(NULL), Path, T, dt, "Hist.txt");
+	vector< vector <double> > X =  PathGen(time(NULL), Path, T, dt, Hist[0]);
 	vector< vector < vector <double> > > T = ExpPolyReg(X,Poly,1);
 
 	//Declare variables for Bucketing
@@ -305,7 +312,7 @@ vector< vector<double> > Val(){
 	start = clock();
 
 
-	vector <vector <double> > X = PathGen((time(NULL)*time(NULL)),2000,T,dt, "Hist.txt");
+	vector <vector <double> > X = PathGen((time(NULL)*time(NULL)),2000,T,dt, Hist[0]);
 
 
 	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
@@ -328,7 +335,7 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	double Dtime = (12-DMONTH)/12;
 
 	//Evaluate CF at time t 
-	double tau = 0., R = 0, n=0, tmp=0;
+	double tau = 0., n=0, tmp=0;
 	vector<double> Phi;
 	while(i<X[0].size()){
 			//Exotic to be priced (i.e. option/spread/barrier SEE opt_eval.cpp for possible options)
@@ -337,8 +344,8 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,Dtime)
 			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
 		//IN-OUT Parity
-			n = 4*barrier_call(X[1][i],1.1,0,1,STRIKE,0.01,Dtime);
-				+barrier_call(X[1][i],1.1,1,1,STRIKE,0.01,Dtime);
+			n = barrier_call(X[1][i],1.2,0,1,STRIKE,0.01,Dtime);
+				// +barrier_call(X[1][i],1.1,1,1,STRIKE,0.01,Dtime);
 		//Call
 			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime);
 		//Construct Barrier with Ret clause

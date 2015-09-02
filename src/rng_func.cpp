@@ -1,5 +1,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_statistics.h>
+
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -7,7 +9,7 @@
 #include <sstream>
 #include <string>
 
-#include <gsl/gsl_statistics.h>
+#include "download.h"
 
 using namespace std;
 
@@ -85,7 +87,7 @@ vector <vector <double> > CorMat(vector <vector <double> > Data){
 	return Mat;
 }
 
-vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, string HistData){
+vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, double tmp1){
 	
 	
 	double k = 170;		//Mean reversion parameter
@@ -117,21 +119,8 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, st
 	vector<double> R1_vec;
 	vector<double> A;
 	vector<double> R2_vec;
-
-	vector<double> Hist;
-
-	ifstream data (HistData.c_str());
-	string line;
-	double TEMP;
 	
-	while(getline(data,line)){
-		stringstream Lin(line);
-		Lin >> TEMP;
-		Hist.push_back(TEMP);
-	}	
-
 	double R1, R2, tmp;
-	//int m;
 
 	for(int COUNT = 0 ; COUNT < PATH ; COUNT++){
 		R1 = -0.005;	//Initial Interest Rate T=0
@@ -142,8 +131,10 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, st
 		R2_vec.push_back(R2);		
 		R1_vec.push_back(R1);
 
-		//tmp = Hist[Hist.size()-1];	//Initial Asset Price T=0
-		tmp =1;
+		//Initial Asset Price T=0
+		// tmp =1;
+		tmp = tmp1;
+
 		A.push_back(tmp);
 
 		for( int i = 1; i<(T/dt) ; i++ ){
