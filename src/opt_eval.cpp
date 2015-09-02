@@ -83,8 +83,10 @@ double barrier_put(vector <double> Path, double barrier, bool IO, bool UD, doubl
 double PRDC(vector <double> FX, vector<double> r1, vector <double> r2, double N, double t){
 	double tmp = 0;
 	double dt = (FX.size()-1)/12;
+	double L;
 	for(size_t i = 0 ; i < FX.size() ; i+=dt){
-		tmp += max(N*(FX[i]/FX[0])*r1[i] - r2[i]*(N-1),(double) 0)*exp(-0.01*(t));
+		L = r1[i]/FX[i];
+		tmp += L*max((FX[i] - (FX[0]*r2[i])/r1[i]), (double) 0)*exp(-0.01*(t));
 	}
 	return tmp;
 }

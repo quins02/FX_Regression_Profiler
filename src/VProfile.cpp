@@ -194,6 +194,8 @@ vector < vector < vector < double > > >  BetaGen(){
 
 	vector< vector < vector <double> > > X =  PathGen(time(NULL), Path, T, dt, Hist[0]);
 	vector< vector < vector <double> > > T = ExpPolyReg(X[0],Poly,1);
+	// T.push_back(X[1]);
+	// T.push_back(X[2]);
 
 	//Declare variables for Bucketing
 	int min, max;
@@ -368,7 +370,7 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 			// 	- opt_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime)
 			// 	- 0.1*opt_dig_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
 		//PRDC
-			// n = PRDC(X[0][i],X[1][i],X[2][i],100,Dtime);
+			// n = PRDC(X[0][i],X[3][i],X[4][i],100,Dtime);
 			Phi.push_back(n);
 			tau+=dt;
 		//Opt<<n<<endl;
@@ -420,7 +422,7 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 
 double parab(vector<double> Coef, double X){
 	double Y = 0;
-	for(size_t i =0 ; i<Coef.size(); i++){
+	for(size_t i =0 ; i<Coef.size() ; i++){
 		Y+=pow(X,i)*Coef[i];
 	}
 	if(Y<0){Y=0;}
