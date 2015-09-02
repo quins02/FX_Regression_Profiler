@@ -21,6 +21,7 @@ vector < vector < vector < double > > >  BetaGen();
 vector< vector<double> > Val();
 //vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, string HistData);
 vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH);
+void EvRiskProf();
 double parab(vector<double> Coef, double X);
 double hyp(vector<double> Coef, double X);
 double mean(vector <double> vec);
@@ -33,7 +34,9 @@ int Path = 10;
 int T = 1;
 int Poly = 2;
 bool OUT = 0;
-vector <double> Hist;
+vector <double> Hist; //Holds Historical time series
+vector< vector<double> > V; //Holds Valutation Paths
+vector < vector < vector < double > > > X; //Holds Beta Values
 
 int main(){
 	//Timing Start
@@ -44,11 +47,27 @@ int main(){
 	Data_Download("ECB/EURUSD","8dM9KB3tW11HYvxXGCBK");
 	Hist = TS_Vec("tmp/Out.csv");
 
+
+	printf("FX Regression Risk Profiler\n"
+			"***************************\n\n"
+			"Current Spot Rate for EURUSD: ");
 	cout<<Hist[0]<<endl;
 
-	vector < vector < vector < double > > > X = BetaGen();
-	vector< vector<double> > V = Val();
+	X = BetaGen();
+	V = Val();
+	EvRiskProf();
 
+	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
+	cout<<"Time to generate risk profile: "<<duration<<"s"<<endl;
+
+	cout<<"Press any key to exit...";
+	cin.ignore();
+	cin.get();
+
+	return 0;
+}
+
+void EvRiskProf(){
 	//Declare Variables necessary for valutaion
 	size_t Path_Length = V[0].size();
 	size_t Num_Path = V.size();
@@ -126,19 +145,11 @@ int main(){
 		PMean<<i+1<<"\t"<<mean(X_percent(Val_T[i],0.95))<<endl;
 	}
 
-	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
-	cout<<"Time to generate risk profile: "<<duration<<"s"<<endl;
-
-	cout<<"Press any key to exit...";
-	cin.ignore();
-	cin.get();
-
-	return 0;
 }
 
 vector < vector < vector < double > > >  BetaGen(){
 	//Set regression options from user
-	cout<<"Regression Pricing for FX Exotics\n----------------------------\n\n";
+	cout<<"\n----------------------------\nPricing for FX Exotics\n----------------------------\n\n";
 	cout<<"Strike price: ";
 	cin>>STRIKE;
 	// cout<<"Month to discount to: ";
@@ -406,7 +417,7 @@ double parab(vector<double> Coef, double X){
 	for(size_t i =0 ; i<Coef.size(); i++){
 		Y+=pow(X,i)*Coef[i];
 	}
-	// if(Y<0){Y=0;}
+	if(Y<0){Y=0;}
 	// if(Y>1){Y=1;}
 	return Y;
 }
