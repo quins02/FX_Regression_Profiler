@@ -36,7 +36,8 @@ int Poly = 2;
 bool OUT = 0;
 vector <double> Hist; //Holds Historical time series
 vector< vector<double> > V; //Holds Valutation Paths
-vector < vector < vector < double > > > X; //Holds Beta Values
+vector < vector < vector < double > > > XMain; //Holds Beta Values
+vector < vector < vector < double > > > X; //Holds Regression Path Values
 
 int main(){
 	//Timing Start
@@ -53,8 +54,9 @@ int main(){
 			"Current Spot Rate for EURUSD: ");
 	cout<<Hist[0]<<endl;
 
-	X = BetaGen();
+	XMain = BetaGen();
 	V = Val();
+
 	EvRiskProf();
 
 	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
@@ -71,15 +73,15 @@ void EvRiskProf(){
 	//Declare Variables necessary for valutaion
 	size_t Path_Length = V[0].size();
 	size_t Num_Path = V.size();
-	size_t Num_Buckets = X[0].size();
+	size_t Num_Buckets = XMain[0].size();
 
 	// cout<<	Path_Length <<endl;
 	// cout<< Num_Path <<endl;
 	// cout<< Num_Buckets <<endl;
 	// cout<<X.size() <<endl;
-	// cout<<X[0].size() <<endl;
-	// cout<<X[0][0].size() <<endl;
-	// cout<<X[10][19][4]<<endl;
+	// cout<<XMain[0].size() <<endl;
+	// cout<<XMain[0][0].size() <<endl;
+	// cout<<XMain[10][19][4]<<endl;
 
 
 	size_t Tv = 0;
@@ -104,13 +106,14 @@ void EvRiskProf(){
 
 	int i = (int) (Path_Length/Interval) ;
 
-	for( Tv =  0 ; Tv < X.size()   ; Tv++ ){
+	for( Tv =  0 ; Tv < XMain.size()   ; Tv++ ){
 	
 		for( size_t j = 0 ; j < Num_Path ; j++ ){
 			tmp = V[j][i];
 			for ( size_t k = 0 ; k < Num_Buckets ; k++ ){
-				vector < double > tmpBeta((X[Tv][k].begin() + 2), X[Tv][k].end());
-				if( X[Tv][k][0] < tmp && tmp < X[Tv][k][1] ){
+				vector < double > tmpBeta((XMain[Tv][k].begin() + 2), XMain[Tv][k].end());
+				//cout<<XMain[Tv][k][0]<<"\t"<<XMain[Tv][k][1]<<endl;
+				if( XMain[Tv][k][0] < tmp && tmp < XMain[Tv][k][1] ){
 					Val_Path.push_back(parab(tmpBeta,tmp));
 					// cout<<tmpBeta[0]<<endl;
 					k = Num_Buckets;
@@ -189,8 +192,8 @@ vector < vector < vector < double > > >  BetaGen(){
 	start = clock();
 
 
-	vector< vector <double> > X =  PathGen(time(NULL), Path, T, dt, Hist[0]);
-	vector< vector < vector <double> > > T = ExpPolyReg(X,Poly,1);
+	vector< vector < vector <double> > > X =  PathGen(time(NULL), Path, T, dt, Hist[0]);
+	vector< vector < vector <double> > > T = ExpPolyReg(X[0],Poly,1);
 
 	//Declare variables for Bucketing
 	int min, max;
@@ -323,13 +326,14 @@ vector< vector<double> > Val(){
 	start = clock();
 
 
-	vector <vector <double> > X = PathGen((time(NULL)*time(NULL)),2000,T,dt, Hist[0]);
+	vector <vector <vector <double> > > ValP = PathGen((time(NULL)*time(NULL)),2000,T,dt, Hist[0]);
+	vector< vector <double> > XOut = ValP[0];
 
 
 	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
 	cout<<"Time to generate valuation paths: "<<duration<<"s"<<endl;
 
-	return X;
+	return XOut;
 
 }
 
@@ -355,14 +359,16 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,Dtime)
 			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
 		//IN-OUT Parity
-			n = barrier_call(X[1][i],1.2,0,1,STRIKE,0.01,Dtime);
+			// n = barrier_call(X[1][i],1.2,0,1,STRIKE,0.01,Dtime);
 				// +barrier_call(X[1][i],1.1,1,1,STRIKE,0.01,Dtime);
 		//Call
-			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime);
+			n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime);
 		//Construct Barrier with Ret clause
 			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime)
 			// 	- opt_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime)
 			// 	- 0.1*opt_dig_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
+		//PRDC
+			// n = PRDC(X[0][i],X[1][i],X[2][i],100,Dtime);
 			Phi.push_back(n);
 			tau+=dt;
 		//Opt<<n<<endl;

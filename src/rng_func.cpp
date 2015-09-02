@@ -87,14 +87,14 @@ vector <vector <double> > CorMat(vector <vector <double> > Data){
 	return Mat;
 }
 
-vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, double tmp1){
+vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, double dt, double tmp1){
 	
-	
+	//Stochastic Interest rate 1 parameters	
 	double k = 170;		//Mean reversion parameter
-	double V = 0.01;	//Average interest rate
+	double V = 0.05;	//Average interest rate
 	double o = 0.05;	//Interest rate volatility
 
-	//Stochastic Interest rate 1 parameters
+	//Stochastic Interest rate 2 parameters
 	double Sk = 170;	//Mean reversion parameter
 	double SV = 0.01;	//Average interest rate
 	double So = 0.05;	//Interest rate volatility
@@ -113,7 +113,9 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, do
 
 	gsl_rng_env_setup();
 
-	vector< vector <double> > MultOut;
+	vector< vector <double> > MultOutA;
+	vector< vector <double> > MultOutR1;
+	vector< vector <double> > MultOutR2;
 	vector< vector < vector <double> > > MultOutPLUSR;
 
 	vector<double> R1_vec;
@@ -122,10 +124,12 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, do
 	
 	double R1, R2, tmp;
 
+	double Vol = 0.01;
+
 	for(int COUNT = 0 ; COUNT < PATH ; COUNT++){
-		R1 = -0.005;	//Initial Interest Rate T=0
-		R2 = 0.006;	//Initial Volatility T=0
-		
+		R1 = 0.005;	//Initial Interest Rate T=0
+		R2 = 0.06;	//Initial Volatility T=0
+
 		//m=1;	
 		
 		R2_vec.push_back(R2);		
@@ -142,20 +146,26 @@ vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, do
 			R1+=k*(V-R1)*dt + R1*(gsl_ran_gaussian(W,o));
 			//	m++;
 			//}	
-			R2 += Sk*(SV-R2)*dt + R2*(gsl_ran_gaussian(W,So));
+			R2 += Sk*(SV-R2)*dt + R2*(gsl_ran_gaussian(S,So));
 			R2=abs(R2);
 			R1=abs(R1);
 			R2_vec.push_back(R2);
 			R1_vec.push_back(R1);
 			//tmp += tmp*(R*dt+(gsl_ran_gaussian(r,0.006)));
-			tmp += tmp*((R1-R2)*dt+(gsl_ran_gaussian(r,0.01)));
+			tmp += tmp*((R1-R2)*dt+(gsl_ran_gaussian(r,Vol)));
 			A.push_back(tmp);
 		}
-		MultOut.push_back(A);
+		MultOutA.push_back(A);
+		MultOutR1.push_back(R1_vec);
+		MultOutR2.push_back(R2_vec);
 		R1_vec.clear();
 		A.clear();
 		R2_vec.clear();
 	}
 
-	return MultOut;
+	MultOutPLUSR.push_back(MultOutA);
+	MultOutPLUSR.push_back(MultOutR1);
+	MultOutPLUSR.push_back(MultOutR2);
+
+	return MultOutPLUSR;
 }

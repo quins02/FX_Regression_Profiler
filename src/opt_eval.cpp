@@ -79,6 +79,17 @@ double barrier_put(vector <double> Path, double barrier, bool IO, bool UD, doubl
 	return Coef*opt_put(S,K,r,t);
 }
 
+
+double PRDC(vector <double> FX, vector<double> r1, vector <double> r2, double N, double t){
+	double tmp = 0;
+	double dt = (FX.size()-1)/12;
+	for(size_t i = 0 ; i < FX.size() ; i+=dt){
+		tmp += max(N*(FX[i]/FX[0])*r1[i] - r2[i]*(N-1),(double) 0)*exp(-0.01*(t));
+	}
+	return tmp;
+}
+
+
 double NORMFUNC(double x, void * params){
 	double alpha = *(double *) params;
 	double f = (1/sqrt(2*M_PI))*exp(-(alpha*x*x)/2);
