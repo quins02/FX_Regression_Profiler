@@ -1,42 +1,49 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "rng_func.h"
-#include "opt_eval.h"	//Include optiom calculations functions
-#include "mat_opp.h"	//Include matrix operations functions
-#include "download.h"
 #include <time.h>
 #include <chrono>
 #include <algorithm>
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
+#include "rng_func.h"	//Include Path generating functions
+#include "opt_eval.h"	//Include optiom calculations functions
+#include "mat_opp.h"	//Include matrix operations functions
+#include "download.h"	//Include Quandl API access for Hist data
+
+
 using namespace std;
 
+//DECLARE FUNCTIONS
 vector < vector < vector < double > > >  BetaGen();
 vector < vector < vector < double > > > Val();
-//vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, string HistData);
 vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH);
 void EvRiskProf();
 double parab(vector<double> Coef, double X);
 double hyp(vector<double> Coef, double X);
+double CoefApp(vector<double> Coef, double S, double R1, double R2);
 double mean(vector <double> vec);
 vector <double> X_percent(vector <double> vec, double Percentile);
+double CumIRate(vector <double> A, vector <double> B, double T);
 
 //DECLARE GLOBAL VARIABLES
-double STRIKE = 1.2;
-double dt = 0.01 ;
-int Path = 10;
-int T = 1;
-int Poly = 2;
-bool OUT = 0;
+double STRIKE = 1.2; //Strike with Temp value
+double dt = 0.01 ;	//Time step
+int Path = 10;	//Number of paths with temporary value
+int T = 1;	//Lenght of path
+int Poly = 2; //Order of polynomial regression
+bool OUT = 0; //Output paths to file flag, with temporary value
 vector <double> Hist; //Holds Historical time series
 vector < vector < vector < double > > > VOut; //Holds Valutation Paths
-vector < vector < double > > V; //Holds Valutation Paths
+vector < vector < double > > V; //Holds Valutation Path S
+vector < vector < double > > R1; //Holds Valutation Path R1
+vector < vector < double > > R2; //Holds Valutation Path R2
 vector < vector < vector < double > > > XMain; //Holds Beta Values
 vector < vector < vector < double > > > X; //Holds Regression Path Values
 
@@ -46,24 +53,38 @@ int main(){
 	double duration;
 	start = clock();
 
+	//Download Historical data from Quandl, to Out.csv,
+	//Import as timeseries of prices as Hist.
+	//Used for initial value of spot FX, and for
+	//calibrating model
 	Data_Download("ECB/EURUSD","8dM9KB3tW11HYvxXGCBK");
 	Hist = TS_Vec("tmp/Out.csv");
 
-
+	//Output aesthic title
 	printf("FX Regression Risk Profiler\n"
 			"***************************\n\n"
 			"Current Spot Rate for EURUSD: ");
 	cout<<Hist[0]<<endl;
 
+	//********Call main functions*************
+	//BetaGen:: generates regression paths and performs regression.
+	//			returns value as 3-D vector in form M[Time][Bucket][Regression Coef]
 	XMain = BetaGen();
+	//Val:: generates valuation paths. Returns 3-D vector in form
+	//		M[Asset Price/Rate 1/Rate 2][Path][Time]
 	VOut = Val();
-	V=VOut[0];
-
+	V=VOut[0];	//Extracts only asset price from VOut
+	R1=VOut[1];	//Extracts only R1 from VOut
+	R2=VOut[2];	//Extracts only R2 from VOut
+	//EvRiskProf:: evaluates risk profile by applying beta coefficents to valuations paths
+	//			   outputs to file
 	EvRiskProf();
 
+	//Record duration
 	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
 	cout<<"Time to generate risk profile: "<<duration<<"s"<<endl;
 
+	//Wait for user to manually close program
 	cout<<"Press any key to exit...";
 	cin.ignore();
 	cin.get();
@@ -77,47 +98,47 @@ void EvRiskProf(){
 	size_t Num_Path = V.size();
 	size_t Num_Buckets = XMain[0].size();
 
-	// cout<<	Path_Length <<endl;
-	// cout<< Num_Path <<endl;
-	// cout<< Num_Buckets <<endl;
-	// cout<<X.size() <<endl;
-	// cout<<XMain[0].size() <<endl;
-	// cout<<XMain[0][0].size() <<endl;
-	// cout<<XMain[10][19][4]<<endl;
-
-
+	//Initiate Counting varaibales
 	size_t Tv = 0;
 	int Interval = 12;
+	double tmp, tmpR1, tmpR2;
 
-	double tmp;
+	//Out Valuation paths (Optional)
+	if(OUT == 1){
+		string CVANA = "tmp/VPath.dat";
+		ofstream CVAA;
+		CVAA.open(CVANA.c_str());
 
-	string CVANA = "tmp/VPath.dat";
-	ofstream CVAA;
-	CVAA.open(CVANA.c_str());
-
-	for(size_t i = 0 ; i < V[0].size() ; i++){
-		for(size_t j = 0 ; j < V.size() ; j++){
-			CVAA<<V[j][i]<<"\t";
+		for(size_t i = 0 ; i < V[0].size() ; i++){
+			for(size_t j = 0 ; j < V.size() ; j++){
+				CVAA<<V[j][i]<<"\t";
+			}
+			CVAA<<endl;
 		}
-		CVAA<<endl;
 	}
 
-	// vector < double > tmpBeta;
+
 	vector < double > Val_Path;
 	vector < vector < double > > Val_T;
 
 	int i = (int) (Path_Length/Interval) ;
 
 	for( Tv =  0 ; Tv < XMain.size()   ; Tv++ ){
+
+		string BUCK = "tmp/BucketFit" + static_cast<ostringstream*>( &(ostringstream() << Tv+1) )->str() + string(".dat");
+		ofstream BF;
+		BF.open(BUCK.c_str());
+
 	
 		for( size_t j = 0 ; j < Num_Path ; j++ ){
 			tmp = V[j][i];
+			tmpR1 = R1[j][i];
+			tmpR2 = R2[j][i];
 			for ( size_t k = 0 ; k < Num_Buckets ; k++ ){
 				vector < double > tmpBeta((XMain[Tv][k].begin() + 2), XMain[Tv][k].end());
-				//cout<<XMain[Tv][k][0]<<"\t"<<XMain[Tv][k][1]<<endl;
 				if( XMain[Tv][k][0] < tmp && tmp < XMain[Tv][k][1] ){
-					Val_Path.push_back(parab(tmpBeta,tmp));
-					// cout<<tmpBeta[0]<<endl;
+					Val_Path.push_back(CoefApp(tmpBeta,tmp,tmpR1,tmpR2));
+					BF<<setprecision(4)<<tmp<<"\t"<<CoefApp(tmpBeta,tmp,tmpR1,tmpR2)<<endl;
 					k = Num_Buckets;
 					tmpBeta.clear();
 				}
@@ -126,7 +147,9 @@ void EvRiskProf(){
 		}
 		Val_T.push_back(Val_Path);
 		// cout<<Val_T.size()<<"\t"<<Val_T[Val_T.size()-1].size()<<endl;
+
 		Val_Path.clear();
+		BF.close();
 		i += (int) (Path_Length/Interval);
 	}
 
@@ -196,8 +219,8 @@ vector < vector < vector < double > > >  BetaGen(){
 
 	vector< vector < vector <double> > > X =  PathGen(time(NULL), Path, T, dt, Hist[0]);
 	vector< vector < vector <double> > > T = ExpPolyReg(X[0],Poly,1);
-	// T.push_back(X[1]);
-	// T.push_back(X[2]);
+	T.push_back(X[1]);
+	T.push_back(X[2]);
 
 	//Declare variables for Bucketing
 	int min, max;
@@ -242,9 +265,9 @@ vector < vector < vector < double > > >  BetaGen(){
 		//and applying to function
 		//Output to BucketFit.dat
 		//**************NOT OPTIMISED******************
-		string BUCK = "tmp/BucketFit" + static_cast<ostringstream*>( &(ostringstream() << DMONTH) )->str() + string(".dat");
-		ofstream BF;
-		BF.open(BUCK.c_str());
+		// string BUCK = "tmp/BucketFit" + static_cast<ostringstream*>( &(ostringstream() << DMONTH) )->str() + string(".dat");
+		// ofstream BF;
+		// BF.open(BUCK.c_str());
 
 		//cout<<"Calculating bucketed regression coefficents...\n";
 
@@ -271,9 +294,9 @@ vector < vector < vector < double > > >  BetaGen(){
 			//APPLY REGRESSION TO INDIVIDUAL BUCKETS
 			Btmp = Reg(tmp3, DMONTH);
 			// Generate function and output to BucketFit.dat
-			for(double s = (Bucket[j-1]) ; s < ((Bucket[j])) ; s+=0.001){
-				BF<<setprecision(4)<<s<<"\t"<<parab(Btmp,s)<<endl;
-			}
+			// for(double s = (Bucket[j-1]) ; s < ((Bucket[j])) ; s+=0.001){
+			// 	BF<<setprecision(4)<<s<<"\t"<<parab(Btmp,s)<<endl;
+			// }
 			Btmp.insert(Btmp.begin(), Bucket[j]);
 			Btmp.insert(Btmp.begin(), Bucket[j-1]);
 			BUCKETVEC.push_back(Btmp);
@@ -291,7 +314,6 @@ vector < vector < vector < double > > >  BetaGen(){
 		v.clear();
 		tmp_v.clear();
 		BUCKETVEC.clear();
-		BF.close();
 
 	}
 		
@@ -359,18 +381,20 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	while(i<X[0].size()){
 			//Exotic to be priced (i.e. option/spread/barrier SEE opt_eval.cpp for possible options)
 		//BUTTERFLY SPREAD
-			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,0.01,Dtime)
-			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,0.01,Dtime)
-			// 	+1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
+			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1)
+				// +1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
+				// +1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
 		//IN-OUT Parity
-			// n = barrier_call(X[1][i],1.2,0,1,STRIKE,0.01,Dtime);
-				// +barrier_call(X[1][i],1.1,1,1,STRIKE,0.01,Dtime);
+			n = barrier_call(X[1][i],1.2,0,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+				// +barrier_call(X[1][i],1.1,1,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
 		//Call
-			n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime);
+			// n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+		//Dig Put
+			// n= opt_dig_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1);
 		//Construct Barrier with Ret clause
-			// n = opt_call(X[1][i][T/dt - 1],STRIKE,0.01,Dtime)
-			// 	- opt_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime)
-			// 	- 0.1*opt_dig_call(X[1][i][T/dt - 1],STRIKE+0.1,0.01,Dtime);
+			// n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1)
+			// 	- opt_call(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
+				// - 0.1*opt_dig_call(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1);
 		//PRDC
 			// n = PRDC(X[0][i],X[3][i],X[4][i],100,Dtime);
 			Phi.push_back(n);
@@ -424,9 +448,20 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 
 double parab(vector<double> Coef, double X){
 	double Y = 0;
-	for(size_t i =0 ; i<Coef.size() ; i++){
+	for(size_t i =0 ; i<Coef.size()-2 ; i++){
 		Y+=pow(X,i)*Coef[i];
 	}
+	if(Y<0){Y=0;}
+	// if(Y>1){Y=1;}
+	return Y;
+}
+
+double CoefApp(vector<double> Coef, double S, double R1, double R2){
+	double Y = 0;
+	for(int i =0 ; i<=Poly ; i++){
+		Y+=pow(S,i)*Coef[i];
+	}
+	Y+=R1*Coef[Poly+1]+R2*Coef[Poly+2];
 	if(Y<0){Y=0;}
 	// if(Y>1){Y=1;}
 	return Y;
@@ -455,4 +490,16 @@ vector <double> X_percent(vector <double> vec, double Percentile){
 	int Bracket = S-(int)(S*Percentile);
 	vector <double> Percent (vec.end()-Bracket, vec.end());
 	return Percent;
+}
+
+double CumIRate(vector <double> A, vector <double> B, double T){
+	int Si = (int) A.size();
+	int Brack = (int)(Si*(1 - T));
+	vector<double> Rate(A.begin(), A.begin()+Brack);
+	double Ret=0;
+	for(size_t i = 0 ; i < Rate.size() ; i++){
+		Rate[i]=A[i]-B[i];
+		Ret+=Rate[i]*dt;
+	}
+	return Ret;
 }

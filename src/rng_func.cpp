@@ -91,12 +91,12 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 	
 	//Stochastic Interest rate 1 parameters	
 	double k = 170;		//Mean reversion parameter
-	double V = 0.015;	//Average interest rate
+	double V = 0.05;	//Average interest rate
 	double o = 0.05;	//Interest rate volatility
 
 	//Stochastic Interest rate 2 parameters
 	double Sk = 170;	//Mean reversion parameter
-	double SV = 0.02;	//Average interest rate
+	double SV = 0.01;	//Average interest rate
 	double So = 0.05;	//Interest rate volatility
 
 	const gsl_rng_type * Q = gsl_rng_default;
@@ -124,7 +124,7 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 	
 	double R1, R2, tmp;
 
-	double Vol = sqrt(5)*0.01;
+	double Vol = 0.01;
 
 	for(int COUNT = 0 ; COUNT < PATH ; COUNT++){
 		R1 = 0.015;	//Initial Interest Rate T=0
