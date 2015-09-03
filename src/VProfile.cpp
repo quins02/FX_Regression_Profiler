@@ -18,7 +18,7 @@
 using namespace std;
 
 vector < vector < vector < double > > >  BetaGen();
-vector< vector<double> > Val();
+vector < vector < vector < double > > > Val();
 //vector< vector <double> > PathGen(double seed, int PATH, double T, double dt, string HistData);
 vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH);
 void EvRiskProf();
@@ -35,7 +35,8 @@ int T = 1;
 int Poly = 2;
 bool OUT = 0;
 vector <double> Hist; //Holds Historical time series
-vector< vector<double> > V; //Holds Valutation Paths
+vector < vector < vector < double > > > VOut; //Holds Valutation Paths
+vector < vector < double > > V; //Holds Valutation Paths
 vector < vector < vector < double > > > XMain; //Holds Beta Values
 vector < vector < vector < double > > > X; //Holds Regression Path Values
 
@@ -55,7 +56,8 @@ int main(){
 	cout<<Hist[0]<<endl;
 
 	XMain = BetaGen();
-	V = Val();
+	VOut = Val();
+	V=VOut[0];
 
 	EvRiskProf();
 
@@ -322,20 +324,20 @@ vector < vector < vector < double > > >  BetaGen(){
 	return RetVec;
 }
 
-vector< vector<double> > Val(){
+vector <vector <vector <double> > > Val(){
 	clock_t start;
 	double duration;
 	start = clock();
 
 
 	vector <vector <vector <double> > > ValP = PathGen((time(NULL)*time(NULL)),2000,T,dt, Hist[0]);
-	vector< vector <double> > XOut = ValP[0];
+	//vector< vector <double> > XOut = ValP[0];
 
 
 	duration=(clock()-start)/(double) CLOCKS_PER_SEC;
 	cout<<"Time to generate valuation paths: "<<duration<<"s"<<endl;
 
-	return XOut;
+	return ValP;
 
 }
 

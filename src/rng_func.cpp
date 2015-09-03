@@ -124,7 +124,7 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 	
 	double R1, R2, tmp;
 
-	double Vol = 0.01;
+	double Vol = sqrt(5)*0.01;
 
 	for(int COUNT = 0 ; COUNT < PATH ; COUNT++){
 		R1 = 0.015;	//Initial Interest Rate T=0
