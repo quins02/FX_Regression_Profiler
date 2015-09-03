@@ -385,10 +385,10 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 				// +1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
 				// +1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
 		//IN-OUT Parity
-			n = barrier_call(X[1][i],1.2,0,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+			// n = barrier_call(X[1][i],1.2,0,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
 				// +barrier_call(X[1][i],1.1,1,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
 		//Call
-			// n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+			n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[4][i],X[3][i],Dtime),Dtime);
 		//Dig Put
 			// n= opt_dig_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1);
 		//Construct Barrier with Ret clause
