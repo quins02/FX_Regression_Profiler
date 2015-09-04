@@ -46,7 +46,7 @@ double barrier_call(vector <double> Path, double barrier, bool IO, bool UD, doub
 	else if ( IO == 0 ) {bar = 1;}
 
 	for(size_t i = 1 ; i<PSize ; i++){
-		if( (UD == 1 && Path[i]>barrier) || (UD == 0 && Path[i]<barrier) ){
+		if( (UD == 1 && Path[i]>=barrier) || (UD == 0 && Path[i]<=barrier) ){
 			bar = !bar;
 			i=PSize;
 		}

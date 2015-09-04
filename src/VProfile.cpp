@@ -138,7 +138,7 @@ void EvRiskProf(){
 				vector < double > tmpBeta((XMain[Tv][k].begin() + 2), XMain[Tv][k].end());
 				if( XMain[Tv][k][0] < tmp && tmp < XMain[Tv][k][1] ){
 					Val_Path.push_back(CoefApp(tmpBeta,tmp,tmpR1,tmpR2));
-					BF<<setprecision(4)<<tmp<<"\t"<<CoefApp(tmpBeta,tmp,tmpR1,tmpR2)<<endl;
+					BF<<setprecision(4)<<Tv+1<<"\t"<<tmp<<"\t"<<CoefApp(tmpBeta,tmp,tmpR1,tmpR2)<<endl;
 					k = Num_Buckets;
 					tmpBeta.clear();
 				}
@@ -381,16 +381,16 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	while(i<X[0].size()){
 			//Exotic to be priced (i.e. option/spread/barrier SEE opt_eval.cpp for possible options)
 		//BUTTERFLY SPREAD
-			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1)
-				// +1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
-				// +1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
+			// n = -2*opt_put(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),Dtime)
+				// +1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,CumIRate(X[3][i],X[4][i], Dtime),Dtime)
+				// +1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),Dtime);
 		//IN-OUT Parity
-			// n = barrier_call(X[1][i],1.2,0,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
-				// +barrier_call(X[1][i],1.1,1,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+			// n = barrier_call(X[1][i],1.4,0,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1)
+				// n=barrier_call(X[1][i],1.3,1,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
 		//Call
 			n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[4][i],X[3][i],Dtime),Dtime);
 		//Dig Put
-			// n= opt_dig_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1);
+			// n= opt_dig_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),Dtime);
 		//Construct Barrier with Ret clause
 			// n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1)
 			// 	- opt_call(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),1)
@@ -430,7 +430,7 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 	vector< vector<double> > MATRIX = transpose(tmp_mat);
 	vector< vector<double> > MATRIXMultD = MatMult (tmp_mat,MATRIX);
 	vector< vector<double> > MATRIXMultN = MatMult(tmp_mat ,transpose(phi_T));
-	vector< vector<double> > Beta = MatMult(MatInv(MATRIXMultD), MATRIXMultN);
+	vector< vector<double> > Beta = MatAdd(MatMult(MatInv(MATRIXMultD), MATRIXMultN),MatConstMult(GenIdent((int) MATRIXMultN.size()),1e-5));
 
 	vector <double> BetaVec;
 	for(size_t i = 0; i < (Beta).size(); i++){
