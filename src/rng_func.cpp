@@ -143,10 +143,10 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 
 		for( int i = 1; i<(T/dt) ; i++ ){
 			//if(i==(int)((m/20)*(T/dt))){
-			R1+=k*(V-R1)*dt + R1*(gsl_ran_lognormal(W,0,o));
+			R1+=k*(V-R1)*dt + R1*(gsl_ran_gaussian(W,o));
 			//	m++;
 			//}	
-			R2 += Sk*(SV-R2)*dt + R2*(gsl_ran_lognormal(S,0,So));
+			R2 += Sk*(SV-R2)*dt + R2*(gsl_ran_gaussian(S,So));
 			R2=abs(R2);
 			R1=abs(R1);
 			R2_vec.push_back(R2);

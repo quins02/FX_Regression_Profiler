@@ -385,10 +385,15 @@ vector <double> Reg(vector< vector< vector <double> > > X, double DMONTH){
 				// +1*opt_put(X[1][i][T/dt - 1],STRIKE-0.1,CumIRate(X[3][i],X[4][i], Dtime),Dtime)
 				// +1*opt_put(X[1][i][T/dt - 1],STRIKE+0.1,CumIRate(X[3][i],X[4][i], Dtime),Dtime);
 		//IN-OUT Parity
+<<<<<<< HEAD
 			// n = barrier_call(X[1][i],1.4,0,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1)
 				// n=barrier_call(X[1][i],1.3,1,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+=======
+			n = barrier_call(X[1][i],1.2,0,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+				// +barrier_call(X[1][i],1.1,1,1,STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
+>>>>>>> parent of c114491... Stoc Rates change
 		//Call
-			n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[4][i],X[3][i],Dtime),Dtime);
+			// n = opt_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),1);
 		//Dig Put
 			// n= opt_dig_call(X[1][i][T/dt - 1],STRIKE,CumIRate(X[3][i],X[4][i], Dtime),Dtime);
 		//Construct Barrier with Ret clause
