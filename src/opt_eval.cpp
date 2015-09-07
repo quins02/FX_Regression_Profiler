@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <gsl/gsl_integration.h>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 

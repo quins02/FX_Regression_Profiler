@@ -87,7 +87,7 @@ vector <vector <double> > CorMat(vector <vector <double> > Data){
 	return Mat;
 }
 
-vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, double dt, double tmp1){
+vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, double dt, double tmp){
 	
 	//Stochastic Interest rate 1 parameters	
 	double k = 170;		//Mean reversion parameter
@@ -105,11 +105,11 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 
 	const gsl_rng_type * q = gsl_rng_default;
 	gsl_rng * W = gsl_rng_alloc(q);
-	gsl_rng_set(W, seed*seed);
+	gsl_rng_set(W, seed);
 
 	const gsl_rng_type * O = gsl_rng_default;
 	gsl_rng * S = gsl_rng_alloc(O);
-	gsl_rng_set(S, seed*seed*seed);
+	gsl_rng_set(S, seed);
 
 	gsl_rng_env_setup();
 
@@ -122,7 +122,7 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 	vector<double> A;
 	vector<double> R2_vec;
 	
-	double R1, R2, tmp;
+	double R1, R2;
 
 	double Vol = 0.01;
 
@@ -137,7 +137,6 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 
 		//Initial Asset Price T=0
 		// tmp =1;
-		tmp = tmp1;
 
 		A.push_back(tmp);
 
@@ -147,11 +146,10 @@ vector< vector< vector <double> > > PathGen(double seed, int PATH, double T, dou
 			//	m++;
 			//}	
 			R2 += Sk*(SV-R2)*dt + R2*(gsl_ran_gaussian(S,So));
-			R2=abs(R2);
-			R1=abs(R1);
+			// R2=abs(R2);
+			// R1=abs(R1);
 			R2_vec.push_back(R2);
 			R1_vec.push_back(R1);
-			//tmp += tmp*(R*dt+(gsl_ran_gaussian(r,0.006)));
 			tmp += tmp*((R1-R2)*dt+(gsl_ran_gaussian(r,Vol)));
 			A.push_back(tmp);
 		}
